@@ -12,7 +12,7 @@ class Entry(BaseModel):
 
 HOST = "localhost"
 ORIGINS = ["http://localhost", "http://localhost:4000"]
-VERSION = "0.3"
+VERSION = "1.0"
 
 app = FastAPI(title="FormsAPI", root_path=f"/api/v{VERSION}", version=VERSION)
 
