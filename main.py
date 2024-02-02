@@ -10,15 +10,16 @@ class Entry(BaseModel):
     answers: list[dict]
 
 
+HOST = "localhost"
+ORIGINS = ["http://localhost", "http://localhost:4000"]
 VERSION = "0.2"
 
 app = FastAPI(title="FormsAPI", root_path=f"/api/v{VERSION}", version=VERSION)
 
-origins = ["http://localhost", "http://localhost:4000"]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -62,7 +63,7 @@ def create_entry(entry: Entry):
 if __name__ == "__main__":
     run(
         "main:app",
-        host="localhost",
+        host=HOST,
         port=8000,
         reload=True,
     )
