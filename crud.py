@@ -70,7 +70,7 @@ def create_answer(
 
 def clear_db():
     with Session(engine) as session:
-        for table in [Form, Question, Variant, Entry, Answer, AnswerVariant]:
+        for table in (Form, Question, Variant, Entry, Answer, AnswerVariant):
             for e in session.exec(select(table)).all():
                 session.delete(e)
 
