@@ -1,33 +1,6 @@
 from sqlalchemy.orm import DeclarativeBase, relationship, Session
 from sqlalchemy import Column, Integer, String, Boolean, create_engine, ForeignKey
 
-stack = []
-
-
-def commit():
-    with Session(bind=engine) as session:
-        session.add_all(stack)
-        session.commit()
-    stack.clear()
-
-
-def delete(entity):
-    with Session(bind=engine) as session:
-        session.query(entity).delete()
-        session.commit()
-
-
-def clear():
-    with Session(bind=engine) as session:
-        session.query(Form).delete()
-        session.query(Question).delete()
-        session.query(Entry).delete()
-        session.query(Answer).delete()
-        session.query(Variant).delete()
-        session.query(AnswerVariants).delete()
-
-        session.commit()
-
 
 class Base(DeclarativeBase):
     pass
@@ -37,6 +10,7 @@ class Form(Base):
     __tablename__ = "forms"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
+    uuid = Column(String)
     name = Column(String)
 
 
@@ -95,4 +69,3 @@ class AnswerVariants(Base):
 engine = create_engine("sqlite:///store.db")
 
 Base.metadata.create_all(bind=engine)
-print("[Database] Created!")
