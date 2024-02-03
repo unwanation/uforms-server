@@ -1,82 +1,77 @@
-import sqlalchemy.orm as orm
-import database as db
+import uuid
+from sqlmodel import Session, select
+from .database import engine
+from .models import Form, Question, Variant, Entry, Answer, AnswerVariant
+
+
+def generate_uuid():
+    return str(uuid.uuid4())
 
 
 def create_form(name: str):
-    db.stack.append(db.Form(name=name))
+    uuid = generate_uuid()
+
+    with Session(engine) as session:
+        session.add(Form(uuid=uuid, name=name))
+        session.commit()
+
+    return uuid
 
 
 def create_question(
-    name: str,
-    description: str,
-    form_id: int,
-    multiple_answer: bool = False,
-    variants: list[str] = [],
+    name: str, multiple: bool, form_id: str, description: str | None = None
 ):
-    db.stack.append(
-        db.Question(
-            name=name,
-            description=description,
-            multiple_answer=multiple_answer,
-            form_id=form_id,
+    with Session(engine) as session:
+        session.add(
+            Question(
+                name=name,
+                description=description,
+                allows_multiple_answer=multiple,
+                form_id=form_id,
+            )
         )
-    )
-
-    for i in variants:
-        create_variant(i, db.stack[-1].id)
+        session.commit()
 
 
 def create_variant(name: str, question_id: int):
-    db.stack.append(db.Variant(name=name, question_id=question_id))
+    with Session(engine) as session:
+        session.add(
+            Variant(
+                name=name,
+                question_id=question_id,
+            )
+        )
+        session.commit()
 
 
-def create_entry(form_id: int):
-    db.stack.append(db.Entry(form_id=form_id))
+def create_entry(form_id: str):
+    with Session(engine) as session:
+        id = len(session.exec(select(Entry)).all()) + 1
+        session.add(Entry(form_id=form_id))
+        session.commit()
+    return id
 
 
 def create_answer(
-    question_id: int, entry_id: int, body: str | None = None, variant_id=None
+    entry_id: int,
+    question_id: int,
+    body: str | None = None,
+    variants: list[int] | None = None,
 ):
-    db.stack.append(
-        db.Answer(
-            body=body, variant_id=variant_id, question_id=question_id, entry_id=entry_id
-        )
-    )
+    with Session(engine) as session:
+        id = len(session.exec(select(Answer)).all()) + 1
+        session.add(Answer(entry_id=entry_id, question_id=question_id, body=body))
+
+        for variant in variants:
+            session.add(AnswerVariant(variant_id=variant, answer_id=id))
+
+        session.commit()
 
 
-def get_forms():
-    with orm.Session(bind=db.engine) as session:
-        return session.query(db.Form).all()
+def clear_db():
+    with Session(engine) as session:
+        for table in [Form, Question, Variant, Entry, Answer, AnswerVariant]:
+            for e in session.exec(select(table)).all():
+                session.delete(e)
 
-
-def get_questions():
-    with orm.Session(bind=db.engine) as session:
-        return session.query(db.Question).all()
-
-
-def get_variants():
-    with orm.Session(bind=db.engine) as session:
-        return session.query(db.Variant).all()
-
-
-def get_questions_by_form(id):
-    with orm.Session(bind=db.engine) as session:
-        return session.query(db.Question).filter(db.Question.form_id == id).all()
-
-
-def get_variants_by_question(id):
-    with orm.Session(bind=db.engine) as session:
-        return session.query(db.Variant).filter(db.Variant.question_id == id).all()
-
-
-def get_entry_count():
-    with orm.Session(bind=db.engine) as session:
-        return session.query(db.Entry).count()
-
-
-def delete_answers():
-    db.delete(db.Answer)
-    db.delete(db.AnswerVariants)
-
-
-db.commit()
+        session.commit()
