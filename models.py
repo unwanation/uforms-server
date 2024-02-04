@@ -48,12 +48,12 @@ class Answer(SQLModel, table=True):
     entry_id: int = Field(foreign_key="entry.id")
     entry: Entry = Relationship(back_populates="answers")
 
+    answer_variants: list["AnswerVariant"] = Relationship(back_populates="answer")
+
 
 class AnswerVariant(SQLModel, table=True):
-    id: int | None = Field(primary_key=True)
-
-    variant_id: int = Field(foreign_key="variant.id")
+    variant_id: int | None = Field(foreign_key="variant.id", primary_key=True)
     variant: Variant = Relationship()
 
-    answer_id: int = Field(foreign_key="answer.id")
-    answer: Answer = Relationship()
+    answer_id: int | None = Field(foreign_key="answer.id", primary_key=True)
+    answer: Answer = Relationship(back_populates="answer_variants")

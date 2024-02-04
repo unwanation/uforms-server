@@ -68,6 +68,16 @@ def create_answer(
         session.commit()
 
 
+def get_forms():
+    with Session(engine) as session:
+        return session.exec(select(Form)).all()
+
+
+def get_form(id):
+    with Session(engine) as session:
+        return session.get(Form, id)
+
+
 def clear_db():
     with Session(engine) as session:
         for table in (Form, Question, Variant, Entry, Answer, AnswerVariant):
