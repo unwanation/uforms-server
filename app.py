@@ -5,11 +5,11 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .database import create_db
 from .models import Form, Question, Variant, Entry, Answer, AnswerVariant
-from . import crud
+from . import routes
 
-VERSION = "1.0"
+VERSION = "1.0.0"
 
-app = FastAPI(title="FormsAPI", root_path=f"/api/v{VERSION}", version=VERSION)
+app = FastAPI(title="uFormsAPI", root_path=f"/api/v{VERSION}", version=VERSION)
 
 
 def main(argv):
@@ -57,32 +57,3 @@ def main(argv):
 
 if __name__ == "__main__":
     main(sys.argv[1:])
-
-
-@app.get("/")
-async def root():
-    return "A mne amerikanskiye burgers dorozhe rootovogo routa"
-
-
-@app.get("/forms")
-def get_forms():
-    return crud.get_forms()
-
-
-@app.get("/forms/{id}")
-def get_form(id: int):
-    return crud.get_form(id)
-
-
-@app.post("/newform")
-def create_form(form: Form):
-    uuid = crud.create_form(form.name)
-
-
-@app.post("/newentry")
-def create_entry(entry: Entry):
-    id = crud.create_entry(form_id=entry.form_id)
-    for answer in entry.answers:
-        crud.create_answer(
-            answer.question_id, id, body=answer.body, variants=answer.answer_variants
-        )
