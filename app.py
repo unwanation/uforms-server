@@ -15,7 +15,7 @@ app = FastAPI(title="uFormsAPI", root_path=f"/api/v{VERSION}", version=VERSION)
 def main(argv):
     HOST = "localhost"
     PORT = 8000
-    ORIGIN_PORT = 4000
+    ORIGIN = "localhost:4000"
     DEBUG = False
 
     try:
@@ -33,9 +33,9 @@ def main(argv):
             case "--port":
                 PORT = arg
             case "--origin":
-                ORIGIN_PORT = arg
+                ORIGIN = arg
 
-    ORIGINS = [f"http://{HOST}", f"http://{HOST}:{ORIGIN_PORT}"]
+    ORIGINS = [f"http://{ORIGIN}"]
 
     app.add_middleware(
         CORSMiddleware,
