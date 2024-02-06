@@ -7,21 +7,37 @@ from .database import create_db
 from .models import Form, Question, Variant, Entry, Answer, AnswerVariant
 from . import routes
 
-VERSION = "1.0.0"
+VERSION = "1.0.1"
+API_VERSION = "1"
 
-app = FastAPI(title="uFormsAPI", root_path=f"/api/v{VERSION}", version=VERSION)
+app = FastAPI(title="uFormsAPI", root_path=f"/api/v{API_VERSION}", version=VERSION)
+
+ORIGINS = [
+    "http://localhost",
+    "http://127.0.0.0",
+    "http://127.0.0.0:3000",
+    "http://127.0.0.0:5000",
+    "http://localhost:3000",
+    "http://localhost:5500",
+]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=ORIGINS,
+    allow_credentials=True,
+    allow_methods=["post", "get"],
+    allow_headers=["*"],
+)
 
 
 def main(argv):
     HOST = "localhost"
     PORT = 8000
-    ORIGIN = "localhost:4000"
     DEBUG = False
 
     try:
-        opts, args = getopt(argv, "d", ["host=", "port=", "origin="])
+        opts, args = getopt(argv, "d", ["host=", "port="])
     except GetoptError:
-        print("server.app --port <port> --origin_port <origin_port>")
+        print("server.app --host <host> --port <port>")
         sys.exit(2)
     for opt, arg in opts:
         match opt:
@@ -32,18 +48,6 @@ def main(argv):
                 HOST = arg
             case "--port":
                 PORT = arg
-            case "--origin":
-                ORIGIN = arg
-
-    ORIGINS = [f"http://{ORIGIN}"]
-
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=ORIGINS,
-        allow_credentials=True,
-        allow_methods=["post", "get"],
-        allow_headers=["*"],
-    )
 
     create_db()
 
